@@ -1505,24 +1505,24 @@ html[lang="ar"] .ar-only.contact-links { display: flex; }
       <form id="requestForm" onsubmit="submitRequest(event)">
         <div class="modal-field">
           <label><span class="en-only-inline">Your Name</span><span class="ar-only-inline">اسمك</span></label>
-          <input type="text" placeholder="John Doe" required>
+          <input type="text" name="name" placeholder="John Doe" required>
         </div>
         <div class="modal-field">
           <label><span class="en-only-inline">Email</span><span class="ar-only-inline">البريد الإلكتروني</span></label>
-          <input type="email" placeholder="john@company.com" required>
+          <input type="email" name="email" placeholder="john@company.com" required>
         </div>
         <div class="modal-field">
           <label><span class="en-only-inline">Type of Request</span><span class="ar-only-inline">نوع الطلب</span></label>
-          <select>
-            <option value="ux">UX Research Project</option>
-            <option value="consult">Consultation</option>
-            <option value="hiring">Hiring</option>
-            <option value="other">Other</option>
+          <select name="request_type">
+            <option value="UX Research Project">UX Research Project</option>
+            <option value="Consultation">Consultation</option>
+            <option value="Hiring">Hiring</option>
+            <option value="Other">Other</option>
           </select>
         </div>
         <div class="modal-field">
           <label><span class="en-only-inline">Message</span><span class="ar-only-inline">الرسالة</span></label>
-          <textarea placeholder="Tell me about your project or question..." required></textarea>
+          <textarea name="message" placeholder="Tell me about your project or question..." required></textarea>
         </div>
         <button type="submit" class="modal-submit"><span class="en-only-inline">Send Request</span><span class="ar-only-inline">إرسال الطلب</span></button>
       </form>
@@ -1739,14 +1739,37 @@ function switchModalTab(tab, btn) {
 }
 function submitRequest(e) {
   e.preventDefault();
-  document.getElementById('requestForm').style.display = 'none';
-  document.getElementById('requestSuccess').classList.add('show');
-  setTimeout(() => {
-    document.getElementById('requestForm').style.display = 'block';
-    document.getElementById('requestSuccess').classList.remove('show');
-    document.getElementById('requestForm').reset();
-    closeTalkModal();
-  }, 3000);
+  const form = document.getElementById('requestForm');
+  const btn = form.querySelector('.modal-submit');
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  const formData = new FormData(form);
+  fetch('https://formspree.io/f/mvzdrzej', {
+    method: 'POST',
+    body: formData,
+    headers: { 'Accept': 'application/json' }
+  }).then(response => {
+    if (response.ok) {
+      form.style.display = 'none';
+      document.getElementById('requestSuccess').classList.add('show');
+      setTimeout(() => {
+        form.style.display = 'block';
+        document.getElementById('requestSuccess').classList.remove('show');
+        form.reset();
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        closeTalkModal();
+      }, 3000);
+    } else {
+      alert('Something went wrong. Please try again or email directly.');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }).catch(() => {
+    alert('Network error. Please try again or email directly.');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  });
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTalkModal(); });
 </script>
